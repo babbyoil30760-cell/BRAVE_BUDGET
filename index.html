@@ -219,10 +219,63 @@
   .budget-item { margin-bottom:14px; }
   .budget-item:last-child { margin-bottom:0; }
   .link-btn { background:none; border:none; color:var(--primary); font-weight:700; font-size:13px; cursor:pointer; padding:6px 0; }
+
+  /* Login screen */
+  .login-wrap {
+    min-height:100vh; display:flex; align-items:center; justify-content:center; padding:24px 16px;
+    background: radial-gradient(circle at 15% 15%, color-mix(in srgb, var(--primary) 35%, transparent), transparent 55%),
+                radial-gradient(circle at 85% 85%, color-mix(in srgb, var(--income) 30%, transparent), transparent 55%),
+                linear-gradient(150deg, var(--primary) 0%, #7aa6ff 45%, var(--income) 100%);
+    position:relative; overflow:hidden;
+  }
+  .login-wrap::before {
+    content:''; position:absolute; inset:0;
+    background-image: radial-gradient(rgba(255,255,255,0.16) 1.5px, transparent 1.5px);
+    background-size: 26px 26px; opacity:0.5; pointer-events:none;
+  }
+  .login-card {
+    background:var(--surface); border:1px solid var(--border); border-radius: var(--radius);
+    box-shadow: 0 20px 45px rgba(0,0,0,0.25), 0 4px 12px rgba(0,0,0,0.12);
+    padding:28px 22px; width:100%; max-width:360px; position:relative; z-index:1;
+  }
+  .profile-list { display:flex; flex-direction:column; gap:8px; }
+  .profile-btn {
+    display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:11px 12px;
+    border-radius:12px; border:1.5px solid var(--border); background:var(--surface-2); cursor:pointer;
+    font-size:15px; font-weight:600; color:var(--text);
+  }
+  .profile-btn:hover { border-color:var(--primary); }
+  .profile-avatar {
+    width:34px; height:34px; border-radius:50%; background:linear-gradient(135deg,var(--primary),#7aa6ff);
+    color:#fff; display:flex; align-items:center; justify-content:center; font-weight:800; font-size:15px; flex-shrink:0;
+  }
+  .profile-del { margin-left:auto; background:none; border:none; color:var(--text-dim); font-size:14px; cursor:pointer; padding:4px; flex-shrink:0; }
+  .pin-dots { display:flex; gap:12px; justify-content:center; margin:18px 0; }
+  .pin-dots span { width:14px; height:14px; border-radius:50%; border:1.5px solid var(--border); background:transparent; }
+  .pin-dots span.filled { background:var(--primary); border-color:var(--primary); }
+  .pin-pad { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; }
+  .pin-pad button {
+    padding:16px 0; border-radius:12px; border:1.5px solid var(--border); background:var(--surface-2);
+    font-size:19px; font-weight:700; cursor:pointer; color:var(--text);
+  }
+  .pin-pad button.pin-action { font-size:14px; color:var(--text-dim); }
+  .who .logout-link { background:none; border:none; color:var(--text-dim); font-size:12px; cursor:pointer; text-decoration:underline; padding:0; margin-left:6px; }
 </style>
 </head>
 <body>
-<div id="app">
+<div id="loginScreen" style="display:none;">
+  <div class="login-wrap">
+    <div class="login-card">
+      <div class="logo" style="width:52px;height:52px;font-size:26px;margin:0 auto 14px;">💰</div>
+      <h1 style="text-align:center;font-size:18px;margin:0 0 4px;">บัญชีรายรับ-รายจ่าย</h1>
+      <p style="text-align:center;color:var(--text-dim);font-size:13px;margin:0 0 20px;">เลือกผู้ใช้ของคุณเพื่อเข้าสู่ระบบ</p>
+      <div id="profileList" class="profile-list"></div>
+      <button class="btn btn-ghost" id="btnAddProfile" style="margin-top:14px;">+ เพิ่มผู้ใช้ใหม่</button>
+    </div>
+  </div>
+</div>
+
+<div id="app" style="display:none;">
   <header class="topbar">
     <div class="brand">
       <div class="logo">💰</div>
@@ -233,8 +286,10 @@
     </div>
     <div class="header-actions">
       <div class="who" id="whoBox"></div>
+      <button class="icon-btn" id="btnCatSettings" title="จัดการหมวดหมู่">🏷️</button>
       <button class="icon-btn" id="btnBudgetSettings" title="ตั้งงบประมาณ">🎯</button>
       <button class="icon-btn" id="btnExport" title="ส่งออกเป็น CSV">⬇️</button>
+      <button class="icon-btn" id="btnLogout" title="ออกจากระบบ">🚪</button>
     </div>
   </header>
 
@@ -261,7 +316,7 @@
   "use strict";
 
   /* ---------------- constants ---------------- */
-  var CATS = {
+  var DEFAULT_CATS = {
     income: [
       {k:"เงินเดือน", i:"💼"}, {k:"โบนัส", i:"🎁"}, {k:"รายได้เสริม", i:"🛠️"},
       {k:"ขายของ", i:"🏷️"}, {k:"เงินลงทุน", i:"📈"}, {k:"อื่นๆ", i:"➕"}
@@ -272,6 +327,9 @@
       {k:"สุขภาพ", i:"💊"}, {k:"การศึกษา", i:"📚"}, {k:"อื่นๆ", i:"➖"}
     ]
   };
+  // CATS is mutable (user can customize); starts as a copy of the defaults
+  // and is overwritten on boot if the user has saved custom categories.
+  var CATS = { income: DEFAULT_CATS.income.slice(), expense: DEFAULT_CATS.expense.slice() };
   var CAT_COLORS = ["#2f6fed","#14a06b","#e14b4b","#f2a93b","#9b59d0","#17a2b8","#e67e22","#6c5ce7","#00b894","#d63384"];
   var MONTHS_TH = ["ม.ค.","ก.พ.","มี.ค.","เม.ย.","พ.ค.","มิ.ย.","ก.ค.","ส.ค.","ก.ย.","ต.ค.","พ.ย.","ธ.ค."];
   var DAYS_TH = ["อา","จ","อ","พ","พฤ","ศ","ส"];
@@ -298,7 +356,7 @@
   var Store = {
     mode: 'local', // 'cloud' | 'local'
     db: null,
-    userNs: null, // db.collection path prefix for this user
+    profileId: null, // id of the logged-in name+PIN profile; set after login
     localKey: 'budget_tx_v1',
     listeners: [],
     _unsub: null,
@@ -307,17 +365,10 @@
       try {
         if (window.claude && typeof window.claude.use === 'function') {
           var db = await window.claude.use('db');
-          var user = await window.claude.use('user');
           if (db) {
-            var myId = null;
-            if (user) { try { myId = await user.id(); } catch(e){ myId = null; } }
-            if (myId) {
-              this.db = db;
-              this.userId = myId;
-              this.mode = 'cloud';
-              this.user = user;
-              return true;
-            }
+            this.db = db;
+            this.mode = 'cloud';
+            return true;
           }
         }
       } catch(e) { /* fall through to local */ }
@@ -325,18 +376,55 @@
       return false;
     },
 
+    /* ---- name+PIN profiles ("login") shared by everyone using this app ---- */
+    async getProfiles(){
+      if (this.mode === 'cloud') {
+        try {
+          var snap = await this.db.doc('data/profiles/registry').get();
+          return (snap.exists && snap.data().list) ? snap.data().list : [];
+        } catch(e){ return []; }
+      } else {
+        try {
+          var raw = localStorage.getItem('budget_profiles_v1');
+          return raw ? JSON.parse(raw) : [];
+        } catch(e){ return []; }
+      }
+    },
+    async saveProfiles(list){
+      if (this.mode === 'cloud') {
+        await this.db.doc('data/profiles/registry').set({ list: list });
+      } else {
+        localStorage.setItem('budget_profiles_v1', JSON.stringify(list));
+      }
+    },
+    async addProfile(name, pin){
+      var list = await this.getProfiles();
+      var id = 'p_' + Date.now().toString(36) + Math.random().toString(36).slice(2,6);
+      list.push({ id: id, name: name, pin: pin });
+      await this.saveProfiles(list);
+      return { id: id, name: name };
+    },
+    async removeProfile(id){
+      var list = (await this.getProfiles()).filter(function(p){ return p.id !== id; });
+      await this.saveProfiles(list);
+    },
+
+    setActiveProfile(id){
+      this.profileId = id;
+    },
+
     col(){
-      return this.db.collection('data/users/' + this.userId + '/transactions');
+      return this.db.collection('data/profiles/' + this.profileId + '/transactions');
     },
 
     _localAll(){
       try {
-        var raw = localStorage.getItem(this.localKey);
+        var raw = localStorage.getItem(this.localKey + '__' + this.profileId);
         return raw ? JSON.parse(raw) : [];
       } catch(e){ return []; }
     },
     _localSave(list){
-      try { localStorage.setItem(this.localKey, JSON.stringify(list)); } catch(e){}
+      try { localStorage.setItem(this.localKey + '__' + this.profileId, JSON.stringify(list)); } catch(e){}
     },
 
     subscribe(cb){
@@ -401,21 +489,44 @@
     async getBudget(){
       if (this.mode === 'cloud') {
         try {
-          var snap = await this.db.doc('data/users/' + this.userId + '/settings/budget').get();
+          var snap = await this.db.doc('data/profiles/' + this.profileId + '/settings/budget').get();
           return snap.exists ? snap.data() : { overall: 0, categories: {} };
         } catch(e){ return { overall:0, categories:{} }; }
       } else {
         try {
-          var raw = localStorage.getItem(this.budgetLocalKey);
+          var raw = localStorage.getItem(this.budgetLocalKey + '__' + this.profileId);
           return raw ? JSON.parse(raw) : { overall:0, categories:{} };
         } catch(e){ return { overall:0, categories:{} }; }
       }
     },
     async setBudget(data){
       if (this.mode === 'cloud') {
-        await this.db.doc('data/users/' + this.userId + '/settings/budget').set(data);
+        await this.db.doc('data/profiles/' + this.profileId + '/settings/budget').set(data);
       } else {
-        localStorage.setItem(this.budgetLocalKey, JSON.stringify(data));
+        localStorage.setItem(this.budgetLocalKey + '__' + this.profileId, JSON.stringify(data));
+      }
+    },
+
+    /* ---- custom categories ---- */
+    categoriesLocalKey: 'budget_categories_v1',
+    async getCategories(){
+      if (this.mode === 'cloud') {
+        try {
+          var snap = await this.db.doc('data/profiles/' + this.profileId + '/settings/categories').get();
+          return snap.exists ? snap.data() : null;
+        } catch(e){ return null; }
+      } else {
+        try {
+          var raw = localStorage.getItem(this.categoriesLocalKey + '__' + this.profileId);
+          return raw ? JSON.parse(raw) : null;
+        } catch(e){ return null; }
+      }
+    },
+    async setCategories(data){
+      if (this.mode === 'cloud') {
+        await this.db.doc('data/profiles/' + this.profileId + '/settings/categories').set(data);
+      } else {
+        localStorage.setItem(this.categoriesLocalKey + '__' + this.profileId, JSON.stringify(data));
       }
     },
 
@@ -430,6 +541,7 @@
 
   /* ---------------- app state ---------------- */
   var STATE = {
+    profile: null, // { id, name } of the logged-in user
     tab: 'dashboard',
     tx: [],
     addType: 'expense',
@@ -452,24 +564,18 @@
   }
 
   /* ---------------- header / who ---------------- */
-  async function renderWho(){
+  function renderWho(){
     var box = document.getElementById('whoBox');
     var greet = document.getElementById('greeting');
-    if (Store.mode === 'cloud' && Store.user) {
-      try {
-        var me = await Store.user.me();
-        box.innerHTML = '<span>'+ (me.name ? escapeHtml(me.name) : 'สวัสดี') +'</span><span class="avatar"><img src="'+me.avatarUrl+'"></span>';
-        greet.textContent = (me.name ? me.name + ' • ' : '') + 'ข้อมูลถูกบันทึกไว้ในบัญชีของคุณ';
-      } catch(e){}
-    } else {
-      box.innerHTML = '<span>โหมดออฟไลน์</span>';
-    }
+    var name = STATE.profile ? STATE.profile.name : '';
+    box.innerHTML = '<span class="profile-avatar" style="width:24px;height:24px;font-size:11px;">'+escapeHtml(name.charAt(0).toUpperCase())+'</span><span>'+escapeHtml(name)+'</span>';
+    greet.textContent = name + ' • ' + (Store.mode === 'cloud' ? 'ข้อมูลถูกบันทึกไว้ในระบบ' : 'บันทึกไว้บนเบราว์เซอร์นี้');
   }
 
   function renderBanner(){
     var el = document.getElementById('storageBanner');
     if (Store.mode === 'local') {
-      el.innerHTML = '<div class="banner">⚠️ <div>ขณะนี้บันทึกข้อมูลไว้บนเบราว์เซอร์นี้เท่านั้น (ยังไม่เชื่อมบัญชีผู้ใช้) หากเปลี่ยนอุปกรณ์ข้อมูลจะไม่ติดตามไปด้วย</div></div>';
+      el.innerHTML = '<div class="banner">⚠️ <div>ขณะนี้บันทึกข้อมูลไว้บนเบราว์เซอร์นี้เท่านั้น หากเปลี่ยนอุปกรณ์หรือเบราว์เซอร์ ข้อมูลของ "'+escapeHtml(STATE.profile ? STATE.profile.name : '')+'" จะไม่ติดตามไปด้วย</div></div>';
     } else {
       el.innerHTML = '';
     }
@@ -480,6 +586,183 @@
       return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
     });
   }
+
+  /* ---------------- auth (name + PIN "login") ---------------- */
+  var SESSION_KEY = 'budget_session_v1';
+  function getSession(){
+    try { var raw = localStorage.getItem(SESSION_KEY); return raw ? JSON.parse(raw) : null; } catch(e){ return null; }
+  }
+  function setSession(profile){
+    try { localStorage.setItem(SESSION_KEY, JSON.stringify({ id: profile.id, name: profile.name })); } catch(e){}
+  }
+  function clearSession(){
+    try { localStorage.removeItem(SESSION_KEY); } catch(e){}
+  }
+
+  async function renderProfileList(){
+    var box = document.getElementById('profileList');
+    box.innerHTML = '<p style="text-align:center;color:var(--text-dim);font-size:13px;">กำลังโหลด...</p>';
+    var profiles = await Store.getProfiles();
+    if (!profiles.length) {
+      box.innerHTML = '<p style="text-align:center;color:var(--text-dim);font-size:13px;">ยังไม่มีผู้ใช้ กด "เพิ่มผู้ใช้ใหม่" เพื่อเริ่มต้น</p>';
+      return;
+    }
+    box.innerHTML = profiles.map(function(p){
+      return '<button class="profile-btn" data-id="'+p.id+'">' +
+        '<span class="profile-avatar">'+escapeHtml(p.name.charAt(0).toUpperCase())+'</span>' +
+        '<span>'+escapeHtml(p.name)+'</span>' +
+        '<span class="profile-del" data-del="'+p.id+'" title="ลบผู้ใช้นี้">🗑️</span>' +
+        '</button>';
+    }).join('');
+    box.querySelectorAll('.profile-btn').forEach(function(btn){
+      btn.addEventListener('click', function(e){
+        if (e.target.closest('[data-del]')) return;
+        var p = profiles.find(function(x){ return x.id === btn.getAttribute('data-id'); });
+        if (p) openPinModal(p, false);
+      });
+    });
+    box.querySelectorAll('[data-del]').forEach(function(b){
+      b.addEventListener('click', async function(e){
+        e.stopPropagation();
+        var p = profiles.find(function(x){ return x.id === b.getAttribute('data-del'); });
+        if (!p) return;
+        if (!confirm('ลบผู้ใช้ "'+p.name+'" ใช่หรือไม่? (ข้อมูลของผู้ใช้นี้จะยังอยู่ในระบบ)')) return;
+        await Store.removeProfile(p.id);
+        renderProfileList();
+      });
+    });
+  }
+
+  // mode: false = verifying PIN to log in an existing profile; true = setting a new PIN for a new profile
+  function openPinModal(profile, isNew){
+    var root = document.getElementById('modalRoot');
+    var pin = '';
+    var pin2 = '';
+    var stage = isNew ? 'set' : 'verify'; // set -> confirm -> done
+
+    function draw(){
+      var title = stage==='verify' ? ('ใส่ PIN ของ ' + escapeHtml(profile.name))
+        : stage==='set' ? ('ตั้ง PIN 4 หลักสำหรับ "'+escapeHtml(profile.name)+'"')
+        : ('ยืนยัน PIN อีกครั้ง');
+      var cur = stage==='confirm' ? pin2 : pin;
+      var dots = '<div class="pin-dots">' + [0,1,2,3].map(function(i){
+        return '<span class="'+(i<cur.length?'filled':'')+'"></span>';
+      }).join('') + '</div>';
+      var html = '<div class="overlay" id="ov"><div class="sheet">';
+      html += '<div class="sheet-head"><h3>'+title+'</h3><button class="close-x" id="ovClose">✕</button></div>';
+      html += dots;
+      html += '<div class="pin-pad">';
+      ['1','2','3','4','5','6','7','8','9'].forEach(function(n){ html += '<button data-num="'+n+'">'+n+'</button>'; });
+      html += '<button class="pin-action" data-clear="1">ล้าง</button><button data-num="0">0</button><button class="pin-action" data-back="1">⌫</button>';
+      html += '</div></div></div>';
+      root.innerHTML = html;
+      document.getElementById('ovClose').addEventListener('click', closeModal);
+      document.getElementById('ov').addEventListener('click', function(e){ if(e.target.id==='ov') closeModal(); });
+      root.querySelectorAll('[data-num]').forEach(function(b){
+        b.addEventListener('click', function(){ pressNum(b.getAttribute('data-num')); });
+      });
+      root.querySelector('[data-clear]').addEventListener('click', function(){
+        if (stage==='confirm') pin2=''; else pin='';
+        draw();
+      });
+      root.querySelector('[data-back]').addEventListener('click', function(){
+        if (stage==='confirm') pin2 = pin2.slice(0,-1); else pin = pin.slice(0,-1);
+        draw();
+      });
+    }
+
+    async function pressNum(n){
+      if (stage==='confirm') {
+        if (pin2.length>=4) return;
+        pin2 += n;
+        draw();
+        if (pin2.length===4) {
+          if (pin2===pin) {
+            var created = await Store.addProfile(profile.name, pin2);
+            closeModal();
+            setSession(created);
+            toast('สร้างผู้ใช้เรียบร้อย');
+            enterApp(created);
+          } else {
+            toast('PIN ไม่ตรงกัน กรุณาลองใหม่');
+            pin=''; pin2=''; stage='set'; draw();
+          }
+        }
+        return;
+      }
+      if (pin.length>=4) return;
+      pin += n;
+      draw();
+      if (pin.length===4) {
+        if (stage==='set') {
+          stage='confirm'; draw();
+        } else {
+          // verify existing profile
+          if (pin===profile.pin) {
+            closeModal();
+            setSession(profile);
+            enterApp(profile);
+          } else {
+            toast('PIN ไม่ถูกต้อง');
+            pin=''; draw();
+          }
+        }
+      }
+    }
+
+    draw();
+  }
+
+  function openAddProfileModal(){
+    var root = document.getElementById('modalRoot');
+    var html = '<div class="overlay" id="ov"><div class="sheet">';
+    html += '<div class="sheet-head"><h3>เพิ่มผู้ใช้ใหม่</h3><button class="close-x" id="ovClose">✕</button></div>';
+    html += '<label class="field">ชื่อผู้ใช้</label><input type="text" id="npName" placeholder="เช่น แม่, พ่อ, ร้านค้า">';
+    html += '<button class="btn btn-primary" id="npNext">ถัดไป: ตั้ง PIN</button>';
+    html += '</div></div>';
+    root.innerHTML = html;
+    document.getElementById('ovClose').addEventListener('click', closeModal);
+    document.getElementById('ov').addEventListener('click', function(e){ if(e.target.id==='ov') closeModal(); });
+    document.getElementById('npNext').addEventListener('click', async function(){
+      var name = document.getElementById('npName').value.trim();
+      if (!name) { toast('กรุณาระบุชื่อ'); return; }
+      var existing = await Store.getProfiles();
+      if (existing.find(function(p){ return p.name===name; })) { toast('มีชื่อนี้อยู่แล้ว ลองชื่ออื่น'); return; }
+      openPinModal({ name: name }, true);
+    });
+  }
+
+  async function enterApp(profile){
+    STATE.profile = { id: profile.id, name: profile.name };
+    Store.setActiveProfile(profile.id);
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('app').style.display = '';
+    renderBanner();
+    renderWho();
+    try { STATE.budget = await Store.getBudget(); } catch(e){}
+    try {
+      var savedCats = await Store.getCategories();
+      if (savedCats && savedCats.income && savedCats.income.length && savedCats.expense && savedCats.expense.length) {
+        CATS.income = savedCats.income;
+        CATS.expense = savedCats.expense;
+      }
+    } catch(e){}
+    Store.subscribe(onData);
+    render();
+  }
+
+  function showLoginScreen(){
+    document.getElementById('app').style.display = 'none';
+    document.getElementById('loginScreen').style.display = '';
+    renderProfileList();
+  }
+
+  document.getElementById('btnAddProfile').addEventListener('click', openAddProfileModal);
+  document.getElementById('btnLogout').addEventListener('click', function(){
+    if (!confirm('ออกจากระบบใช่หรือไม่?')) return;
+    clearSession();
+    location.reload();
+  });
 
   /* ---------------- tabs ---------------- */
   document.querySelectorAll('nav.tabs button').forEach(function(btn){
@@ -537,6 +820,9 @@
     var budgetHtml = renderBudgetSection(monthTx);
     if (budgetHtml) html += '<section><h2 class="section-title">งบประมาณเดือนนี้</h2><div class="card">'+budgetHtml+'</div></section>';
 
+    var dashAlerts = budgetAlerts(monthTx);
+    if (dashAlerts.length) html += alertsBannerHtml(dashAlerts);
+
     html += '<section><h2 class="section-title">สรุปวันนี้ / ปีนี้</h2><div class="grid3" style="grid-template-columns:1fr 1fr;">';
     html += '<div class="card"><p class="stat-label">วันนี้</p><p class="stat-value" style="color:'+(tSum.balance>=0?'var(--income)':'var(--expense)')+'">฿'+fmt(tSum.balance)+'</p><p class="sub" style="font-size:11px;color:var(--text-dim);margin:4px 0 0;">รับ ฿'+fmt(tSum.income)+' · จ่าย ฿'+fmt(tSum.expense)+'</p></div>';
     html += '<div class="card"><p class="stat-label">ปีนี้ ('+(now.getFullYear()+543)+')</p><p class="stat-value" style="color:'+(ySum.balance>=0?'var(--income)':'var(--expense)')+'">฿'+fmt(ySum.balance)+'</p><p class="sub" style="font-size:11px;color:var(--text-dim);margin:4px 0 0;">รับ ฿'+fmt(ySum.income)+' · จ่าย ฿'+fmt(ySum.expense)+'</p></div>';
@@ -593,6 +879,41 @@
     if (pct >= 100) return 'over';
     if (pct >= 80) return 'warn';
     return 'ok';
+  }
+
+  // Returns list of {label, pct, status} for overall/category budgets that are
+  // at or above 80% used (status 'warn') or at/over 100% (status 'over').
+  function budgetAlerts(monthTx){
+    var b = STATE.budget || {overall:0, categories:{}};
+    var alerts = [];
+    var expByCat = {}, totalExp = 0;
+    monthTx.forEach(function(t){
+      if (t.type!=='expense') return;
+      expByCat[t.category] = (expByCat[t.category]||0) + Number(t.amount||0);
+      totalExp += Number(t.amount||0);
+    });
+    if (b.overall > 0) {
+      var pctAll = (totalExp/b.overall)*100;
+      if (pctAll >= 80) alerts.push({label:'งบรวม', pct:pctAll, status: pctAll>=100?'over':'warn'});
+    }
+    Object.keys(b.categories||{}).forEach(function(cat){
+      var lim = b.categories[cat];
+      if (!(lim > 0)) return;
+      var spent = expByCat[cat] || 0;
+      var pct = (spent/lim)*100;
+      if (pct >= 80) alerts.push({label:cat, pct:pct, status: pct>=100?'over':'warn'});
+    });
+    return alerts;
+  }
+
+  function alertsBannerHtml(alerts){
+    if (!alerts || !alerts.length) return '';
+    var rows = alerts.map(function(a){
+      return (a.status==='over' ? '🚨 เกินงบ' : '⚠️ ใกล้เกินงบ') + ' "'+escapeHtml(a.label)+'" แล้ว ('+Math.round(a.pct)+'%)';
+    }).join('<br>');
+    var over = alerts.some(function(a){return a.status==='over';});
+    return '<div class="banner" style="background:var(--expense-bg);border-color:var(--expense);'+(over?'':'opacity:.92;')+'">'+
+      (over?'🚨':'⚠️')+' <div>'+rows+'</div></div>';
   }
 
   function renderBudgetSection(monthTx){
@@ -667,6 +988,65 @@
         btn.disabled = false; btn.textContent = 'บันทึกงบประมาณ';
       }
     });
+  }
+
+  /* ---------------- CATEGORIES ---------------- */
+  function openCategoryModal(){
+    var root = document.getElementById('modalRoot');
+    renderCatModal();
+
+    function renderCatModal(){
+      var html = '<div class="overlay" id="ov">';
+      html += '<div class="sheet">';
+      html += '<div class="sheet-head"><h3>จัดการหมวดหมู่</h3><button class="close-x" id="ovClose">✕</button></div>';
+      html += '<p style="font-size:12px;color:var(--text-dim);margin:0 0 4px;">เพิ่มหรือลบหมวดหมู่รายรับ/รายจ่ายของคุณ (ลบแล้วรายการเดิมจะยังคงอยู่)</p>';
+      [['expense','หมวดรายจ่าย'],['income','หมวดรายรับ']].forEach(function(pair){
+        var type = pair[0], title = pair[1];
+        html += '<label class="field" style="margin-top:16px;">'+title+'</label>';
+        html += '<div class="chip-row" style="margin-bottom:10px;">' + CATS[type].map(function(c){
+          return '<span class="chip" style="display:inline-flex;align-items:center;gap:6px;">'+c.i+' '+escapeHtml(c.k)+
+            '<button data-rm="'+type+'|'+escapeHtml(c.k)+'" style="background:none;border:none;color:var(--expense);font-weight:800;cursor:pointer;padding:0 2px;font-size:13px;">✕</button></span>';
+        }).join('') + '</div>';
+        html += '<div class="row" style="gap:8px;margin-bottom:4px;">'+
+          '<input type="text" maxlength="2" placeholder="🙂" data-icon="'+type+'" style="width:56px;text-align:center;flex-shrink:0;">'+
+          '<input type="text" placeholder="ชื่อหมวดใหม่" data-name="'+type+'" style="flex:1;">'+
+          '<button class="btn btn-primary" style="width:auto;margin-top:0;padding:11px 14px;flex-shrink:0;" data-addcat="'+type+'">เพิ่ม</button>'+
+          '</div>';
+      });
+      html += '</div></div>';
+      root.innerHTML = html;
+
+      document.getElementById('ovClose').addEventListener('click', closeModal);
+      document.getElementById('ov').addEventListener('click', function(e){ if(e.target.id==='ov') closeModal(); });
+
+      root.querySelectorAll('[data-rm]').forEach(function(b){
+        b.addEventListener('click', async function(){
+          var parts = b.getAttribute('data-rm').split('|');
+          var type = parts[0], key = parts[1];
+          if (CATS[type].length<=1) { toast('ต้องมีอย่างน้อย 1 หมวดหมู่'); return; }
+          if (!confirm('ลบหมวดหมู่ "'+key+'" ใช่หรือไม่?')) return;
+          CATS[type] = CATS[type].filter(function(c){ return c.k!==key; });
+          try { await Store.setCategories(CATS); } catch(e){}
+          renderCatModal();
+          render();
+        });
+      });
+      root.querySelectorAll('[data-addcat]').forEach(function(b){
+        b.addEventListener('click', async function(){
+          var type = b.getAttribute('data-addcat');
+          var iconInp = root.querySelector('[data-icon="'+type+'"]');
+          var nameInp = root.querySelector('[data-name="'+type+'"]');
+          var name = nameInp.value.trim();
+          var icon = iconInp.value.trim() || (type==='income'?'➕':'➖');
+          if (!name) { toast('กรุณาระบุชื่อหมวดหมู่'); return; }
+          if (CATS[type].find(function(c){return c.k===name;})) { toast('มีหมวดหมู่นี้อยู่แล้ว'); return; }
+          CATS[type].push({k:name, i:icon});
+          try { await Store.setCategories(CATS); } catch(e){}
+          renderCatModal();
+          render();
+        });
+      });
+    }
   }
 
   /* ---------------- EXPORT ---------------- */
@@ -762,7 +1142,18 @@
       btn.disabled = true; btn.textContent = 'กำลังบันทึก...';
       try {
         await Store.add({ type: STATE.addType, amount: amt, category: STATE.addCat, date: date, note: note });
-        toast('บันทึกรายการเรียบร้อย');
+        var alertMsg = null;
+        if (STATE.addType === 'expense' && date.slice(0,7) === monthKey(new Date())) {
+          var mk = monthKey(new Date());
+          var projected = allTx().filter(function(t){ return t.date && t.date.slice(0,7)===mk; })
+            .concat([{ type:'expense', category: STATE.addCat, amount: amt }]);
+          var hits = budgetAlerts(projected).filter(function(a){ return a.label===STATE.addCat || a.label==='งบรวม'; });
+          if (hits.length) {
+            var worst = hits.sort(function(a,b){ return b.pct-a.pct; })[0];
+            alertMsg = (worst.status==='over' ? '🚨 เกินงบ ' : '⚠️ ใกล้เกินงบ ') + '"'+worst.label+'" ('+Math.round(worst.pct)+'%)';
+          }
+        }
+        toast(alertMsg || 'บันทึกรายการเรียบร้อย');
         document.getElementById('fAmount').value='';
         document.getElementById('fNote').value='';
         switchTab('dashboard');
@@ -948,6 +1339,42 @@
     container.querySelector('#navNext').addEventListener('click', onNext);
   }
 
+  function categoryPieSvg(list){
+    var byCat = {}, total = 0;
+    list.forEach(function(t){
+      if (t.type!=='expense') return;
+      byCat[t.category] = (byCat[t.category]||0) + Number(t.amount||0);
+      total += Number(t.amount||0);
+    });
+    var entries = Object.keys(byCat).map(function(k){return {cat:k, amt:byCat[k]};}).sort(function(a,b){return b.amt-a.amt;});
+    if (!total || entries.length===0) return '';
+    var size=140, r=54, cx=size/2, cy=size/2, circ=2*Math.PI*r;
+    var offset=0;
+    var circles = entries.map(function(e,i){
+      var frac = e.amt/total;
+      var dash = frac*circ;
+      var seg = '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="none" stroke="'+CAT_COLORS[i % CAT_COLORS.length]+'" stroke-width="20" '+
+        'stroke-dasharray="'+dash+' '+(circ-dash)+'" stroke-dashoffset="'+(-offset)+'" transform="rotate(-90 '+cx+' '+cy+')"></circle>';
+      offset += dash;
+      return seg;
+    }).join('');
+    var legend = entries.slice(0,6).map(function(e,i){
+      var pct = Math.round((e.amt/total)*100);
+      return '<div style="display:flex;align-items:center;gap:6px;font-size:12px;margin-bottom:6px;">'+
+        '<span style="width:10px;height:10px;border-radius:3px;background:'+CAT_COLORS[i % CAT_COLORS.length]+';flex-shrink:0;"></span>'+
+        '<span style="flex:1;color:var(--text-dim);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">'+escapeHtml(e.cat)+'</span>'+
+        '<span style="font-weight:700;">'+pct+'%</span></div>';
+    }).join('');
+    return '<div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;justify-content:center;margin-bottom:14px;">'+
+      '<svg width="'+size+'" height="'+size+'" viewBox="0 0 '+size+' '+size+'" style="flex-shrink:0;">'+circles+
+      '<circle cx="'+cx+'" cy="'+cy+'" r="'+(r-20)+'" fill="var(--surface)"></circle>'+
+      '<text x="'+cx+'" y="'+(cy-4)+'" text-anchor="middle" style="font-size:11px;fill:var(--text-dim);">รวม</text>'+
+      '<text x="'+cx+'" y="'+(cy+13)+'" text-anchor="middle" style="font-size:13px;font-weight:800;fill:var(--text);">฿'+fmt(total)+'</text>'+
+      '</svg>'+
+      '<div style="flex:1;min-width:140px;">'+legend+'</div>'+
+      '</div>';
+  }
+
   function categoryBreakdownHtml(list){
     var byCat = {};
     list.forEach(function(t){
@@ -979,7 +1406,7 @@
     html += '<div class="card"><p class="stat-label">รายจ่าย</p><p class="stat-value expense">฿'+fmt(s.expense)+'</p></div>';
     html += '<div class="card"><p class="stat-label">คงเหลือ</p><p class="stat-value" style="color:'+(s.balance>=0?'var(--income)':'var(--expense)')+'">฿'+fmt(s.balance)+'</p></div>';
     html += '</div>';
-    html += '<div class="card"><h2 class="section-title">สัดส่วนรายจ่ายตามหมวดหมู่</h2>'+categoryBreakdownHtml(list)+'</div>';
+    html += '<div class="card"><h2 class="section-title">สัดส่วนรายจ่ายตามหมวดหมู่</h2>'+categoryPieSvg(list)+categoryBreakdownHtml(list)+'</div>';
     html += '<div class="card" style="margin-top:14px;"><h2 class="section-title">รายการของวันนี้</h2>'+
       (list.length ? list.map(renderTxItem).join('') : '<p style="color:var(--text-dim);font-size:13px;text-align:center;">ไม่มีรายการ</p>')+'</div>';
     body.innerHTML = html;
@@ -1025,7 +1452,7 @@
       '<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;min-width:'+w+'px;height:130px;">'+bars+'</svg></div>';
     var budgetHtml2 = renderBudgetSection(list);
     if (budgetHtml2) html += '<div class="card" style="margin-bottom:14px;"><h2 class="section-title">งบประมาณ</h2>'+budgetHtml2+'</div>';
-    html += '<div class="card"><h2 class="section-title">สัดส่วนรายจ่ายตามหมวดหมู่</h2>'+categoryBreakdownHtml(list)+'</div>';
+    html += '<div class="card"><h2 class="section-title">สัดส่วนรายจ่ายตามหมวดหมู่</h2>'+categoryPieSvg(list)+categoryBreakdownHtml(list)+'</div>';
     body.innerHTML = html;
     bindNav(body,
       function(){ STATE.statsAnchor = new Date(y, m-1, 1); renderStatsView(); },
@@ -1065,7 +1492,7 @@
     html += '</div>';
     html += '<div class="card" style="margin-bottom:14px;"><h2 class="section-title">รายเดือนตลอดปี</h2>'+
       '<svg viewBox="0 0 '+w+' '+h+'" style="width:100%;height:140px;">'+bars+'</svg></div>';
-    html += '<div class="card"><h2 class="section-title">สัดส่วนรายจ่ายตามหมวดหมู่</h2>'+categoryBreakdownHtml(list)+'</div>';
+    html += '<div class="card"><h2 class="section-title">สัดส่วนรายจ่ายตามหมวดหมู่</h2>'+categoryPieSvg(list)+categoryBreakdownHtml(list)+'</div>';
     body.innerHTML = html;
     bindNav(body,
       function(){ STATE.statsAnchor = new Date(y-1, d.getMonth(), 1); renderStatsView(); },
@@ -1083,15 +1510,22 @@
   /* ---------------- boot ---------------- */
   document.getElementById('btnBudgetSettings').addEventListener('click', openBudgetModal);
   document.getElementById('btnExport').addEventListener('click', exportCsv);
+  document.getElementById('btnCatSettings').addEventListener('click', openCategoryModal);
 
   (async function boot(){
     await Store.init();
     await Store.initDownloads();
-    renderBanner();
-    renderWho();
-    try { STATE.budget = await Store.getBudget(); } catch(e){}
-    Store.subscribe(onData);
-    render();
+    var session = getSession();
+    if (session && session.id) {
+      var profiles = await Store.getProfiles();
+      var match = profiles.find(function(p){ return p.id === session.id; });
+      if (match) {
+        await enterApp(match);
+        return;
+      }
+      clearSession();
+    }
+    showLoginScreen();
   })();
 
 })();
