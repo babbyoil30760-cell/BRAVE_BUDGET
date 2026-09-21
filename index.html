@@ -18,6 +18,8 @@
     --income-bg: #e6f7ef;
     --expense: #e14b4b;
     --expense-bg: #fdecec;
+    --other: #a6791b;
+    --other-bg: #fdf3da;
     --shadow: 0 1px 3px rgba(20,20,30,0.06), 0 1px 2px rgba(20,20,30,0.08);
     --radius: 14px;
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Sarabun", "Noto Sans Thai", Roboto, Helvetica, Arial, sans-serif;
@@ -36,6 +38,8 @@
       --income-bg: #12332584;
       --expense: #ff6b6b;
       --expense-bg: #3a1d1d84;
+      --other: #d9b24f;
+      --other-bg: #33290f84;
       --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.5);
     }
   }
@@ -52,6 +56,8 @@
     --income-bg: #12332584;
     --expense: #ff6b6b;
     --expense-bg: #3a1d1d84;
+    --other: #d9b24f;
+    --other-bg: #33290f84;
     --shadow: 0 1px 3px rgba(0,0,0,0.4), 0 1px 2px rgba(0,0,0,0.5);
   }
   * { box-sizing: border-box; }
@@ -177,6 +183,51 @@
   .cat-bar-fill { height:100%; border-radius:6px; }
   .cat-bar-amt { font-size:12px; font-weight:700; width:76px; text-align:right; flex-shrink:0; }
 
+  /* ---- tax tab ---- */
+  .tax-callout { display:flex; gap:10px; align-items:flex-start; background:var(--primary-dim); border:1px solid var(--primary); border-radius:12px; padding:12px 14px; font-size:12.5px; color:var(--text); margin-bottom:14px; line-height:1.6; }
+  .tax-callout .cico { flex-shrink:0; }
+  .tax-cat-row { display:flex; align-items:center; gap:10px; padding:9px 0; border-bottom:1px solid var(--border); flex-wrap:wrap; }
+  .tax-cat-row:last-child { border-bottom:none; }
+  .tax-cat-row .tcr-name { font-size:13px; font-weight:600; flex:1; min-width:90px; }
+  .tax-cat-row .tcr-amt { font-size:13px; font-weight:700; color:var(--text-dim); }
+  .tax-cat-row select { width:auto; padding:6px 8px; font-size:12px; border-radius:8px; }
+  .badge { display:inline-block; padding:2px 9px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap; }
+  .badge.b-salary { background:var(--primary-dim); color:var(--primary); }
+  .badge.b-other { background:var(--other-bg); color:var(--other); }
+  .badge.b-business { background:var(--income-bg); color:var(--income); }
+  .badge.b-none { background:var(--surface-2); color:var(--text-dim); }
+  .tax-section-head { display:flex; align-items:center; gap:10px; margin-bottom:2px; }
+  .tax-section-head .tsh-icon { width:32px; height:32px; border-radius:9px; display:flex; align-items:center; justify-content:center; font-size:16px; flex-shrink:0; }
+  .tax-section-head .tsh-step { margin-left:auto; font-size:11px; font-weight:700; color:var(--text-dim); background:var(--surface-2); border-radius:20px; padding:2px 9px; }
+  .tax-field { display:grid; grid-template-columns:1fr 140px; gap:12px; align-items:start; padding:11px 0; border-bottom:1px solid var(--border); }
+  .tax-field:last-child { border-bottom:none; }
+  .tax-field label { font-size:13.5px; font-weight:600; display:block; }
+  .tax-field .tf-hint { display:block; font-size:11.5px; font-weight:400; color:var(--text-dim); margin-top:3px; line-height:1.5; }
+  .tax-field input[type=number] { padding:8px 9px; font-size:13.5px; text-align:right; }
+  .tax-checkrow { display:flex; align-items:flex-start; gap:10px; padding:11px 0; border-bottom:1px solid var(--border); }
+  .tax-checkrow input { width:18px; height:18px; margin-top:2px; flex-shrink:0; accent-color:var(--primary); }
+  .tax-checkrow label { font-size:13.5px; font-weight:600; }
+  .tax-checkrow .tf-hint { display:block; font-size:11.5px; font-weight:400; color:var(--text-dim); margin-top:2px; }
+  .tax-status-card { border-radius:14px; padding:18px 18px 16px; margin-bottom:16px; }
+  .tax-status-card.due { background:var(--expense-bg); }
+  .tax-status-card.refund { background:var(--income-bg); }
+  .tax-status-card .lbl { font-size:12.5px; color:var(--text-dim); font-weight:700; margin:0 0 4px; }
+  .tax-status-card .amt { font-size:28px; font-weight:800; margin:0 0 4px; }
+  .tax-status-card.due .amt { color:var(--expense); }
+  .tax-status-card.refund .amt { color:var(--income); }
+  .tax-status-card .sub { font-size:11.5px; color:var(--text-dim); }
+  .tax-stack { height:12px; border-radius:20px; overflow:hidden; display:flex; width:100%; background:var(--surface-2); margin:6px 0 10px; }
+  .tax-stack span { height:100%; }
+  .tax-legend { display:flex; flex-wrap:wrap; gap:12px; font-size:11.5px; color:var(--text-dim); margin-bottom:14px; }
+  .tax-legend .dot { display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:middle; }
+  .tax-rate-row { display:flex; gap:10px; margin:14px 0 2px; }
+  .tax-rate-chip { flex:1; text-align:center; background:var(--surface-2); border-radius:10px; padding:10px 6px; }
+  .tax-rate-chip .v { font-size:17px; font-weight:800; }
+  .tax-rate-chip .l { font-size:10.5px; color:var(--text-dim); margin-top:2px; }
+  .tax-year-row { display:flex; gap:8px; margin-bottom:14px; overflow-x:auto; }
+  .tax-year-row button { padding:8px 14px; border-radius:9px; border:1.5px solid var(--border); background:var(--surface); color:var(--text-dim); font-weight:700; font-size:13px; cursor:pointer; white-space:nowrap; }
+  .tax-year-row button.active { background:var(--primary); border-color:var(--primary); color:#fff; }
+
   /* modal */
   .overlay {
     position:fixed; inset:0; background:rgba(0,0,0,0.45); display:flex; align-items:flex-end; justify-content:center;
@@ -300,12 +351,14 @@
     <button data-tab="add">เพิ่มรายการ</button>
     <button data-tab="list">รายการ</button>
     <button data-tab="stats">สถิติ</button>
+    <button data-tab="tax">ภาษี</button>
   </nav>
 
   <div id="view-dashboard"></div>
   <div id="view-add" style="display:none;"></div>
   <div id="view-list" style="display:none;"></div>
   <div id="view-stats" style="display:none;"></div>
+  <div id="view-tax" style="display:none;"></div>
 </div>
 
 <div id="modalRoot"></div>
@@ -530,6 +583,52 @@
       }
     },
 
+    /* ---- tax calculator: category-to-income-type mapping (shared across years) ---- */
+    taxMapLocalKey: 'budget_taxmap_v1',
+    async getTaxMapping(){
+      if (this.mode === 'cloud') {
+        try {
+          var snap = await this.db.doc('data/profiles/' + this.profileId + '/settings/taxmap').get();
+          return snap.exists ? snap.data() : null;
+        } catch(e){ return null; }
+      } else {
+        try {
+          var raw = localStorage.getItem(this.taxMapLocalKey + '__' + this.profileId);
+          return raw ? JSON.parse(raw) : null;
+        } catch(e){ return null; }
+      }
+    },
+    async setTaxMapping(data){
+      if (this.mode === 'cloud') {
+        await this.db.doc('data/profiles/' + this.profileId + '/settings/taxmap').set(data);
+      } else {
+        localStorage.setItem(this.taxMapLocalKey + '__' + this.profileId, JSON.stringify(data));
+      }
+    },
+
+    /* ---- tax calculator: deduction inputs, kept per tax year ---- */
+    taxValuesLocalKey: 'budget_taxvals_v1',
+    async getTaxValues(year){
+      if (this.mode === 'cloud') {
+        try {
+          var snap = await this.db.doc('data/profiles/' + this.profileId + '/settings/tax_' + year).get();
+          return snap.exists ? snap.data() : null;
+        } catch(e){ return null; }
+      } else {
+        try {
+          var raw = localStorage.getItem(this.taxValuesLocalKey + '__' + this.profileId + '__' + year);
+          return raw ? JSON.parse(raw) : null;
+        } catch(e){ return null; }
+      }
+    },
+    async setTaxValues(year, data){
+      if (this.mode === 'cloud') {
+        await this.db.doc('data/profiles/' + this.profileId + '/settings/tax_' + year).set(data);
+      } else {
+        localStorage.setItem(this.taxValuesLocalKey + '__' + this.profileId + '__' + year, JSON.stringify(data));
+      }
+    },
+
     async initDownloads(){
       try {
         if (window.claude && typeof window.claude.use === 'function') {
@@ -551,6 +650,19 @@
     statsPeriod: 'month', // day|month|year
     statsAnchor: new Date(),
     budget: { overall: 0, categories: {} },
+    taxYear: new Date().getFullYear(),
+    taxMapping: null, // {catName: 'salary'|'other12'|'business'|'none'}
+    taxValues: null,  // per-year deduction inputs, loaded lazily
+    taxValuesLoadedYear: null,
+  };
+
+  var TAX_TYPE_LABEL = { salary: 'เงินเดือน (40(1))', other12: 'เงินได้อื่น (40(2))', business: 'ธุรกิจ/อาชีพอิสระ', none: 'ไม่นับเป็นเงินได้' };
+  var TAX_TYPE_BADGE = { salary: 'b-salary', other12: 'b-other', business: 'b-business', none: 'b-none' };
+  var TAX_FIELD_DEFAULTS = {
+    withheld:0, spouse:false, childBasic:0, childEnh:0, parents:0, disabled:0,
+    sso:0, lifeIns:0, healthIns:0, parentHealthIns:0, providentFund:0, pensionIns:0, rmf:0, ssf:0, nsf:0,
+    homeInterest:0, donateGeneral:0, donateDouble:0,
+    manualSalary:null, manualOther12:null, manualBusiness:null // null = use auto-sum from transactions
   };
 
   function allTx(){ return STATE.tx || []; }
@@ -769,7 +881,7 @@
     btn.addEventListener('click', function(){
       STATE.tab = btn.getAttribute('data-tab');
       document.querySelectorAll('nav.tabs button').forEach(function(b){ b.classList.toggle('active', b===btn); });
-      ['dashboard','add','list','stats'].forEach(function(t){
+      ['dashboard','add','list','stats','tax'].forEach(function(t){
         document.getElementById('view-'+t).style.display = (t===STATE.tab) ? '' : 'none';
       });
       render();
@@ -1499,36 +1611,367 @@
       function(){ STATE.statsAnchor = new Date(y+1, d.getMonth(), 1); renderStatsView(); });
   }
 
+  /* ---------------- tax view ---------------- */
+  function taxAvailableYears(){
+    var set = {};
+    allTx().forEach(function(t){ if (t.date) set[t.date.slice(0,4)] = true; });
+    set[String(STATE.taxYear)] = true;
+    set[String(new Date().getFullYear())] = true;
+    return Object.keys(set).map(Number).sort(function(a,b){ return b-a; });
+  }
+
+  function defaultTaxMapping(){
+    var m = {};
+    CATS.income.forEach(function(c){
+      var k = c.k;
+      if (k==='เงินเดือน' || k==='โบนัส') m[k]='salary';
+      else if (k==='รายได้เสริม' || k==='เงินลงทุน') m[k]='other12';
+      else if (k==='ขายของ') m[k]='business';
+      else m[k]='other12';
+    });
+    return m;
+  }
+
+  function taxIncomeByCategory(year){
+    var byCat = {};
+    allTx().forEach(function(t){
+      if (t.type!=='income' || !t.date || t.date.slice(0,4)!==String(year)) return;
+      byCat[t.category] = (byCat[t.category]||0) + (Number(t.amount)||0);
+    });
+    return byCat;
+  }
+
+  function taxAutoTotals(year, mapping){
+    var byCat = taxIncomeByCategory(year);
+    var totals = { salary:0, other12:0, business:0, none:0 };
+    Object.keys(byCat).forEach(function(cat){
+      var type = mapping[cat] || 'other12';
+      totals[type] = (totals[type]||0) + byCat[cat];
+    });
+    return { byCat: byCat, totals: totals };
+  }
+
+  function taxBrackets(){
+    return [
+      [0,150000,0],[150000,300000,0.05],[300000,500000,0.10],[500000,750000,0.15],
+      [750000,1000000,0.20],[1000000,2000000,0.25],[2000000,5000000,0.30],[5000000,Infinity,0.35]
+    ];
+  }
+
+  function calcTaxFromNet(net){
+    var tax=0, marginal=0, perBracket=[];
+    taxBrackets().forEach(function(b){
+      var lo=b[0], hi=b[1], rate=b[2];
+      var taxableInBand = Math.max(0, Math.min(net,hi)-lo);
+      var t = taxableInBand*rate;
+      tax += t;
+      perBracket.push({lo:lo,hi:hi,rate:rate,taxableInBand:taxableInBand,t:t});
+      if (taxableInBand>0) marginal = rate;
+    });
+    return { tax:tax, perBracket:perBracket, marginal:marginal };
+  }
+
+  function taxFullCalc(){
+    var v = STATE.taxValues || TAX_FIELD_DEFAULTS;
+    var auto = taxAutoTotals(STATE.taxYear, STATE.taxMapping || defaultTaxMapping());
+    var salary = v.manualSalary!=null ? Number(v.manualSalary)||0 : auto.totals.salary;
+    var other12 = v.manualOther12!=null ? Number(v.manualOther12)||0 : auto.totals.other12;
+    var business = v.manualBusiness!=null ? Number(v.manualBusiness)||0 : auto.totals.business;
+    var withheld = Number(v.withheld)||0;
+
+    var employmentIncome = salary+other12;
+    var expense = Math.min(employmentIncome*0.5, 100000);
+    var totalIncome = employmentIncome+business;
+    var incomeAfterExpense = (employmentIncome-expense)+business;
+
+    var detailItems = [];
+    var personal = 60000; detailItems.push(['ลดหย่อนส่วนตัว',60000]);
+    if (v.spouse){ personal+=60000; detailItems.push(['คู่สมรส',60000]); }
+    var cb=(Number(v.childBasic)||0)*30000; if(cb>0){ personal+=cb; detailItems.push(['บุตร (อัตราปกติ)',cb]); }
+    var ce=(Number(v.childEnh)||0)*60000; if(ce>0){ personal+=ce; detailItems.push(['บุตร (อัตราเพิ่ม)',ce]); }
+    var pr=Math.min(Number(v.parents)||0,4)*30000; if(pr>0){ personal+=pr; detailItems.push(['บิดามารดา',pr]); }
+    var db=(Number(v.disabled)||0)*60000; if(db>0){ personal+=db; detailItems.push(['ผู้พิการ/ทุพพลภาพ',db]); }
+
+    var sso=Math.min(Number(v.sso)||0,9000); if(sso>0) detailItems.push(['ประกันสังคม',sso]);
+    var healthSelf=Math.min(Number(v.healthIns)||0,25000);
+    var life=Math.min(Number(v.lifeIns)||0, Math.max(0,100000-healthSelf));
+    if(life>0) detailItems.push(['ประกันชีวิต/สะสมทรัพย์',life]);
+    if(healthSelf>0) detailItems.push(['ประกันสุขภาพตนเอง',healthSelf]);
+    var parentHealth=Math.min(Number(v.parentHealthIns)||0,15000); if(parentHealth>0) detailItems.push(['ประกันสุขภาพบิดามารดา',parentHealth]);
+
+    var provident=Math.min(Number(v.providentFund)||0,500000);
+    var pension=Math.min(Number(v.pensionIns)||0, Math.min(totalIncome*0.15,200000));
+    var rmf=Math.min(Number(v.rmf)||0, Math.min(totalIncome*0.30,500000));
+    var ssf=Math.min(Number(v.ssf)||0, Math.min(totalIncome*0.30,200000));
+    var nsf=Math.min(Number(v.nsf)||0,13200);
+    var retirementSum=provident+pension+rmf+ssf+nsf;
+    if (retirementSum>500000) retirementSum=500000;
+    if (retirementSum>0) detailItems.push(['กองทุนเกษียณรวม',retirementSum]);
+
+    var homeInterest=Math.min(Number(v.homeInterest)||0,100000); if(homeInterest>0) detailItems.push(['ดอกเบี้ยที่อยู่อาศัย',homeInterest]);
+
+    var otherDeductions = sso+life+healthSelf+parentHealth+retirementSum+homeInterest;
+    var totalDeductions = personal+otherDeductions;
+    var incomeBeforeDonation = Math.max(0, incomeAfterExpense-totalDeductions);
+
+    var donateInput = (Number(v.donateGeneral)||0)+(Number(v.donateDouble)||0)*2;
+    var donationCap = incomeBeforeDonation*0.10;
+    var donation = Math.min(donateInput, donationCap);
+    if (donation>0) detailItems.push(['เงินบริจาค',donation]);
+
+    var netIncome = Math.max(0, incomeBeforeDonation-donation);
+    var r = calcTaxFromNet(netIncome);
+    var balance = r.tax - withheld;
+    var takeHome = Math.max(0, totalIncome - r.tax);
+
+    return {
+      salary:salary, other12:other12, business:business, withheld:withheld, totalIncome:totalIncome,
+      expense:expense, totalDeductions:totalDeductions, donation:donation, netIncome:netIncome,
+      tax:r.tax, perBracket:r.perBracket, marginal:r.marginal, balance:balance, takeHome:takeHome,
+      detailItems:detailItems, auto:auto
+    };
+  }
+
+  function taxField(id, label, hint, val){
+    return '<div class="tax-field"><label>'+label+'<span class="tf-hint">'+hint+'</span></label>' +
+      '<input type="number" min="0" step="100" id="'+id+'" value="'+(val||0)+'"></div>';
+  }
+
+  function saveTaxValues(){
+    STATE.taxValues.updatedAt = Date.now();
+    Store.setTaxValues(STATE.taxYear, STATE.taxValues).catch(function(){});
+  }
+
+  function readTaxInputsIntoState(){
+    var v = STATE.taxValues;
+    ['withheld','childBasic','childEnh','parents','disabled','sso','lifeIns','healthIns','parentHealthIns',
+     'providentFund','pensionIns','rmf','ssf','nsf','homeInterest','donateGeneral','donateDouble'].forEach(function(id){
+      var el = document.getElementById('tx_'+id);
+      if (el) v[id] = Math.max(0, parseFloat(el.value)||0);
+    });
+    var sp = document.getElementById('tx_spouse'); if (sp) v.spouse = sp.checked;
+    ['manualSalary','manualOther12','manualBusiness'].forEach(function(k){
+      var el = document.getElementById('tx_'+k);
+      if (el) v[k] = el.value==='' ? null : Math.max(0, parseFloat(el.value)||0);
+    });
+  }
+
+  function renderTaxSummary(){
+    var c = taxFullCalc();
+    var box = document.getElementById('taxStatusCard');
+    if (!box) return;
+    if (c.balance>=0){
+      box.className = 'tax-status-card due';
+      box.innerHTML = '<p class="lbl">ภาษีที่ต้องชำระเพิ่ม</p><p class="amt">฿'+fmt(c.balance)+'</p>' +
+        '<p class="sub">ภาษีที่คำนวณได้ ฿'+fmt(c.tax)+' หัก ณ ที่จ่ายไว้แล้ว ฿'+fmt(c.withheld)+'</p>';
+    } else {
+      box.className = 'tax-status-card refund';
+      box.innerHTML = '<p class="lbl">ภาษีที่ได้รับคืน</p><p class="amt">฿'+fmt(-c.balance)+'</p>' +
+        '<p class="sub">ภาษีที่คำนวณได้ ฿'+fmt(c.tax)+' น้อยกว่าที่ถูกหัก ณ ที่จ่ายไว้ ฿'+fmt(c.withheld)+'</p>';
+    }
+
+    document.getElementById('taxTotalIncome').textContent = '฿'+fmt(c.totalIncome);
+    document.getElementById('taxExpense').textContent = '฿'+fmt(c.expense);
+    document.getElementById('taxDeductions').textContent = '฿'+fmt(c.totalDeductions);
+    document.getElementById('taxDonation').textContent = '฿'+fmt(c.donation);
+    document.getElementById('taxNet').textContent = '฿'+fmt(c.netIncome);
+    document.getElementById('taxTax').textContent = '฿'+fmt(c.tax);
+    document.getElementById('taxEffRate').textContent = (c.totalIncome>0 ? (c.tax/c.totalIncome*100).toFixed(1):'0.0')+'%';
+    document.getElementById('taxMarginal').textContent = (c.marginal*100).toFixed(0)+'%';
+    document.getElementById('taxMonthly').textContent = '฿'+fmt(c.takeHome/12);
+
+    var base = c.totalIncome>0 ? c.totalIncome : 1;
+    var segExempt = Math.max(0, c.totalIncome - c.tax - Math.max(0, c.netIncome - c.tax));
+    var segTax = Math.min(c.tax, c.totalIncome);
+    var segNet = Math.max(0, c.totalIncome - segExempt - segTax);
+    document.getElementById('taxStack').innerHTML =
+      '<span style="width:'+(segExempt/base*100)+'%;background:var(--other)"></span>' +
+      '<span style="width:'+(segTax/base*100)+'%;background:var(--expense)"></span>' +
+      '<span style="width:'+(segNet/base*100)+'%;background:var(--income)"></span>';
+
+    var dl = document.getElementById('taxDetailList');
+    if (!c.detailItems.length) {
+      dl.innerHTML = '<p style="color:var(--text-dim);font-size:12.5px;text-align:center;padding:8px 0;">ยังไม่ได้ใช้สิทธิลดหย่อนเพิ่มเติมนอกจากลดหย่อนส่วนตัว</p>';
+    } else {
+      var maxD = Math.max.apply(null, c.detailItems.map(function(x){return x[1];}));
+      dl.innerHTML = c.detailItems.map(function(item,i){
+        var pct = (item[1]/maxD*100);
+        var color = CAT_COLORS[i % CAT_COLORS.length];
+        return '<div class="cat-bar-row"><span class="cat-name" style="width:130px;">'+escapeHtml(item[0])+'</span>' +
+          '<div class="cat-bar-track"><div class="cat-bar-fill" style="width:'+pct+'%;background:'+color+';"></div></div>' +
+          '<span class="cat-bar-amt">฿'+fmt(item[1])+'</span></div>';
+      }).join('');
+    }
+
+    var maxB = Math.max.apply(null, c.perBracket.map(function(b){return b.taxableInBand;})) || 1;
+    document.getElementById('taxBrackets').innerHTML = c.perBracket.map(function(b){
+      var lbl = b.hi===Infinity ? ('เกิน '+fmt(b.lo)) : (fmt(b.lo)+'–'+fmt(b.hi));
+      var pct = (b.taxableInBand/maxB*100);
+      var color = b.taxableInBand>0 ? 'var(--expense)' : 'var(--other)';
+      return '<div class="cat-bar-row"><span class="cat-name" style="width:130px;">'+lbl+' ('+(b.rate*100).toFixed(0)+'%)</span>' +
+        '<div class="cat-bar-track"><div class="cat-bar-fill" style="width:'+pct+'%;background:'+color+';"></div></div>' +
+        '<span class="cat-bar-amt">฿'+fmt(b.t)+'</span></div>';
+    }).join('');
+  }
+
+  var taxSaveTimer = null;
+  function computeTax(){
+    readTaxInputsIntoState();
+    renderTaxSummary();
+    clearTimeout(taxSaveTimer);
+    taxSaveTimer = setTimeout(saveTaxValues, 600);
+  }
+
+  async function ensureTaxDataLoaded(){
+    if (!STATE.taxMapping) {
+      var saved = await Store.getTaxMapping();
+      var def = defaultTaxMapping();
+      STATE.taxMapping = saved ? Object.assign({}, def, saved) : def;
+    }
+    if (STATE.taxValuesLoadedYear !== STATE.taxYear) {
+      var savedV = await Store.getTaxValues(STATE.taxYear);
+      STATE.taxValues = Object.assign({}, TAX_FIELD_DEFAULTS, savedV||{});
+      STATE.taxValuesLoadedYear = STATE.taxYear;
+    }
+  }
+
+  async function renderTaxView(){
+    var body = document.getElementById('view-tax');
+    await ensureTaxDataLoaded();
+    var v = STATE.taxValues;
+    var years = taxAvailableYears();
+    var auto = taxAutoTotals(STATE.taxYear, STATE.taxMapping);
+    var catNames = Object.keys(auto.byCat);
+
+    var html = '';
+    html += '<section><h2 class="section-title">เลือกปีภาษี</h2><div class="tax-year-row">' +
+      years.map(function(y){ return '<button data-year="'+y+'" class="'+(y===STATE.taxYear?'active':'')+'">ปี '+(y+543)+'</button>'; }).join('') +
+      '</div></section>';
+
+    // status + summary hero
+    html += '<div id="taxStatusCard" class="tax-status-card due"></div>';
+    html += '<section><div class="card">';
+    html += '<h2 class="section-title">สัดส่วนเงินได้ทั้งปี</h2>';
+    html += '<div class="tax-stack" id="taxStack"></div>';
+    html += '<div class="tax-legend"><span><i class="dot" style="background:var(--other)"></i>ยกเว้น/ลดหย่อนภาษี</span>' +
+      '<span><i class="dot" style="background:var(--expense)"></i>ภาษีที่ต้องจ่าย</span>' +
+      '<span><i class="dot" style="background:var(--income)"></i>เงินคงเหลือสุทธิ</span></div>';
+    html += '<table class="rows" style="width:100%;border-collapse:collapse;font-size:13px;">' +
+      '<tr><td style="padding:6px 0;">เงินได้พึงประเมินรวม</td><td id="taxTotalIncome" style="text-align:right;font-weight:600;">฿0</td></tr>' +
+      '<tr><td style="padding:6px 0;">หักค่าใช้จ่าย</td><td id="taxExpense" style="text-align:right;font-weight:600;">฿0</td></tr>' +
+      '<tr><td style="padding:6px 0;">หักค่าลดหย่อนรวม</td><td id="taxDeductions" style="text-align:right;font-weight:600;">฿0</td></tr>' +
+      '<tr><td style="padding:6px 0;">หักเงินบริจาค</td><td id="taxDonation" style="text-align:right;font-weight:600;">฿0</td></tr>' +
+      '<tr><td style="padding:8px 0 0;font-weight:700;">เงินได้สุทธิ (ฐานภาษี)</td><td id="taxNet" style="text-align:right;font-weight:800;padding-top:8px;">฿0</td></tr>' +
+      '<tr><td style="font-weight:700;">ภาษีที่คำนวณได้</td><td id="taxTax" style="text-align:right;font-weight:800;">฿0</td></tr>' +
+      '</table>';
+    html += '<div class="tax-rate-row">' +
+      '<div class="tax-rate-chip"><div class="v" id="taxEffRate">0%</div><div class="l">อัตราภาษีเฉลี่ย</div></div>' +
+      '<div class="tax-rate-chip"><div class="v" id="taxMarginal">0%</div><div class="l">ขั้นสูงสุดที่เสีย</div></div>' +
+      '<div class="tax-rate-chip"><div class="v" id="taxMonthly" style="font-size:14px;">฿0</div><div class="l">คงเหลือสุทธิ/เดือน</div></div>' +
+      '</div>';
+    html += '</div></section>';
+
+    // auto income from transactions
+    html += '<section><div class="card">';
+    html += '<h2 class="section-title">1 · เงินได้จากบัญชีปีนี้ แยกตามหมวดหมู่</h2>';
+    html += '<p style="font-size:12.5px;color:var(--text-dim);margin:0 0 10px;">ระบบดึงยอดรายรับที่บันทึกไว้ในแท็บ "รายการ" มาจัดกลุ่มตามประเภทเงินได้ทางภาษีให้อัตโนมัติ ปรับหมวดได้ที่ช่องเลือกด้านขวา</p>';
+    if (!catNames.length) {
+      html += '<p style="color:var(--text-dim);font-size:13px;text-align:center;padding:10px 0;">ยังไม่มีรายการรายรับในปีนี้ — กรอกเงินได้ด้วยตนเองได้ที่ด้านล่าง</p>';
+    } else {
+      html += catNames.map(function(cat){
+        var type = STATE.taxMapping[cat] || 'other12';
+        return '<div class="tax-cat-row"><span class="tcr-name">'+escapeHtml(cat)+'</span>' +
+          '<span class="badge '+TAX_TYPE_BADGE[type]+'">'+TAX_TYPE_LABEL[type]+'</span>' +
+          '<span class="tcr-amt">฿'+fmt(auto.byCat[cat])+'</span>' +
+          '<select data-cat="'+escapeHtml(cat)+'" class="taxMapSel">' +
+            Object.keys(TAX_TYPE_LABEL).map(function(k){ return '<option value="'+k+'"'+(k===type?' selected':'')+'>'+TAX_TYPE_LABEL[k]+'</option>'; }).join('') +
+          '</select></div>';
+      }).join('');
+      html += '<div class="tax-callout" style="margin-top:12px;"><span class="cico">💡</span><span>รวมตามประเภท: เงินเดือน ฿'+fmt(auto.totals.salary)+' · เงินได้อื่น ฿'+fmt(auto.totals.other12)+' · ธุรกิจ/อาชีพอิสระ ฿'+fmt(auto.totals.business)+
+        '. ยอดนี้จะถูกใช้คำนวณโดยอัตโนมัติ เว้นแต่จะกรอกยอดเองในช่อง "กรอกเอง" ด้านล่าง</span></div>';
+    }
+    html += '<div style="margin-top:14px;">';
+    html += taxManualField('manualSalary', 'เงินเดือน/ค่าจ้างทั้งปี (40(1))', 'เว้นว่างเพื่อใช้ยอดอัตโนมัติจากบัญชี ฿'+fmt(auto.totals.salary)+' หรือกรอกเพื่อแทนที่', v.manualSalary);
+    html += taxManualField('manualOther12', 'เงินได้อื่นที่หักค่าใช้จ่าย 50% ได้ (40(2))', 'เว้นว่างเพื่อใช้ยอดอัตโนมัติ ฿'+fmt(auto.totals.other12)+' หรือกรอกเพื่อแทนที่', v.manualOther12);
+    html += taxManualField('manualBusiness', 'เงินได้สุทธิจากธุรกิจ/อาชีพอิสระ (40(5)-(8))', 'เว้นว่างเพื่อใช้ยอดอัตโนมัติ ฿'+fmt(auto.totals.business)+' หรือกรอกเพื่อแทนที่', v.manualBusiness);
+    html += taxField('tx_withheld', 'ภาษีที่ถูกหัก ณ ที่จ่ายไว้แล้วทั้งปี', 'ยอดสะสมจากหนังสือรับรองหัก ณ ที่จ่าย (50 ทวิ) ทุกใบรวมกัน', v.withheld);
+    html += '</div></div></section>';
+
+    // family
+    html += '<section><div class="card">';
+    html += '<div class="tax-section-head"><span class="tsh-icon" style="background:var(--primary-dim);">👪</span><h2 class="section-title" style="margin:0;">2 · ลดหย่อนส่วนตัวและครอบครัว</h2></div>';
+    html += '<div class="tax-field"><label>ลดหย่อนส่วนตัว<span class="tf-hint">สิทธิพื้นฐานของผู้มีเงินได้ทุกคน</span></label><input type="number" value="60,000" disabled style="opacity:.55;text-align:right;"></div>';
+    html += '<div class="tax-checkrow"><input type="checkbox" id="tx_spouse" '+(v.spouse?'checked':'')+'><div><label for="tx_spouse">คู่สมรสไม่มีเงินได้</label><span class="tf-hint">ลดหย่อนเพิ่ม 60,000 บาท จดทะเบียนสมรสถูกต้องตามกฎหมาย</span></div></div>';
+    html += taxField('tx_childBasic', 'จำนวนบุตร (อัตราปกติ)', '30,000 บาท/คน อายุไม่เกิน 20 ปี หรือ 25 ปีถ้าศึกษาอยู่', v.childBasic);
+    html += taxField('tx_childEnh', 'บุตรลำดับ 2 ขึ้นไป (เกิดปี 2561+)', 'อัตราเพิ่ม 60,000 บาท/คน นับลำดับการเกิดของบุตรทุกคนรวมกัน', v.childEnh);
+    html += taxField('tx_parents', 'บิดามารดา (ตนเอง/คู่สมรส)', '30,000 บาท/ท่าน สูงสุด 4 ท่าน อายุ 60+ รายได้ไม่เกิน 30,000/ปี', v.parents);
+    html += taxField('tx_disabled', 'ผู้พิการ/ทุพพลภาพในอุปการะ', '60,000 บาท/คน ต้องมีบัตรผู้พิการ', v.disabled);
+    html += '</div></section>';
+
+    // insurance
+    html += '<section><div class="card">';
+    html += '<div class="tax-section-head"><span class="tsh-icon" style="background:var(--income-bg);">🛡️</span><h2 class="section-title" style="margin:0;">3 · ประกันและเงินออมเพื่อการเกษียณ</h2></div>';
+    html += taxField('tx_sso', 'เงินสมทบประกันสังคม', 'สูงสุด 9,000 บาท/ปี', v.sso);
+    html += taxField('tx_lifeIns', 'เบี้ยประกันชีวิต/สะสมทรัพย์', 'รวมกับประกันสุขภาพตนเองไม่เกิน 100,000 บาท', v.lifeIns);
+    html += taxField('tx_healthIns', 'เบี้ยประกันสุขภาพตนเอง', 'หักได้ไม่เกิน 25,000 บาท (นับในเพดานรวม 100,000)', v.healthIns);
+    html += taxField('tx_parentHealthIns', 'เบี้ยประกันสุขภาพบิดามารดา', 'สูงสุด 15,000 บาท', v.parentHealthIns);
+    html += taxField('tx_providentFund', 'กองทุนสำรองเลี้ยงชีพ/กบข./ครูเอกชน', 'ตามยอดหักจากเงินเดือนจริง', v.providentFund);
+    html += taxField('tx_pensionIns', 'ประกันชีวิตแบบบำนาญ', 'สูงสุด 15% ของเงินได้ หรือ 200,000 บาท', v.pensionIns);
+    html += taxField('tx_rmf', 'กองทุนรวม RMF', 'สูงสุด 30% ของเงินได้ หรือ 500,000 บาท', v.rmf);
+    html += taxField('tx_ssf', 'กองทุนรวม SSF', 'สูงสุด 30% ของเงินได้ หรือ 200,000 บาท', v.ssf);
+    html += taxField('tx_nsf', 'กองทุนการออมแห่งชาติ (กอช.)', 'สูงสุด 13,200 บาท/ปี', v.nsf);
+    html += '<div class="tax-callout"><span class="cico">ℹ️</span><span>กองทุนสำรอง + บำนาญ + RMF + SSF + กอช. รวมกันหักได้ไม่เกิน <b>500,000 บาท</b> ระบบปรับยอดให้อัตโนมัติหากเกินเพดาน</span></div>';
+    html += '</div></section>';
+
+    // home & donation
+    html += '<section><div class="card">';
+    html += '<div class="tax-section-head"><span class="tsh-icon" style="background:var(--other-bg);">🏠</span><h2 class="section-title" style="margin:0;">4 · ที่อยู่อาศัยและเงินบริจาค</h2></div>';
+    html += taxField('tx_homeInterest', 'ดอกเบี้ยเงินกู้ยืมเพื่อที่อยู่อาศัย', 'เฉพาะดอกเบี้ย สูงสุด 100,000 บาทต่อหลัง', v.homeInterest);
+    html += taxField('tx_donateGeneral', 'เงินบริจาคทั่วไป', 'วัด มูลนิธิ องค์กรสาธารณกุศล หักตามที่จ่ายจริง', v.donateGeneral);
+    html += taxField('tx_donateDouble', 'เงินบริจาคเพื่อการศึกษา/กีฬา/รพ.รัฐ', 'หักได้ 2 เท่าของยอดที่จ่ายจริง', v.donateDouble);
+    html += '<div class="tax-callout"><span class="cico">ℹ️</span><span>เงินบริจาคทุกประเภทรวมกันหักได้ไม่เกิน <b>10%</b> ของเงินได้หลังหักค่าใช้จ่ายและค่าลดหย่อนอื่น</span></div>';
+    html += '</div></section>';
+
+    html += '<section><h2 class="section-title">รายการลดหย่อนที่ใช้สิทธิ</h2><div class="card" id="taxDetailList"></div></section>';
+    html += '<section><h2 class="section-title">แยกภาษีตามขั้นบันได</h2><div class="card" id="taxBrackets"></div></section>';
+
+    html += '<p style="font-size:11.5px;color:var(--text-dim);line-height:1.7;margin:6px 2px 24px;">เครื่องมือนี้เป็นการประมาณการเบื้องต้นสำหรับกรณีทั่วไป อ้างอิงอัตราภาษีและเพดานลดหย่อนตามหลักเกณฑ์ทั่วไปของกรมสรรพากร แต่ไม่ครอบคลุมทุกเงื่อนไขพิเศษ เช่น ภาษีขั้นต่ำ 0.5% สำหรับเงินได้ประเภทอื่นที่ไม่ใช่เงินเดือนรวมกันเกิน 1,000,000 บาทต่อปี หรือมาตรการลดหย่อนเฉพาะกิจรายปี โปรดตรวจสอบกับกรมสรรพากรหรือนักบัญชีสำหรับกรณีที่ซับซ้อน</p>';
+
+    body.innerHTML = html;
+
+    // bindings
+    body.querySelectorAll('.tax-year-row button').forEach(function(btn){
+      btn.addEventListener('click', async function(){
+        STATE.taxYear = Number(btn.getAttribute('data-year'));
+        await renderTaxView();
+      });
+    });
+    body.querySelectorAll('.taxMapSel').forEach(function(sel){
+      sel.addEventListener('change', async function(){
+        STATE.taxMapping[sel.getAttribute('data-cat')] = sel.value;
+        Store.setTaxMapping(STATE.taxMapping).catch(function(){});
+        await renderTaxView();
+      });
+    });
+    var allInputIds = ['tx_withheld','tx_spouse','tx_childBasic','tx_childEnh','tx_parents','tx_disabled',
+      'tx_sso','tx_lifeIns','tx_healthIns','tx_parentHealthIns','tx_providentFund','tx_pensionIns','tx_rmf','tx_ssf','tx_nsf',
+      'tx_homeInterest','tx_donateGeneral','tx_donateDouble','tx_manualSalary','tx_manualOther12','tx_manualBusiness'];
+    allInputIds.forEach(function(id){
+      var el = document.getElementById(id);
+      if (!el) return;
+      el.addEventListener(el.type==='checkbox' ? 'change' : 'input', computeTax);
+    });
+
+    renderTaxSummary();
+  }
+
+  function taxManualField(id, label, hint, val){
+    return '<div class="tax-field"><label>'+label+'<span class="tf-hint">'+hint+'</span></label>' +
+      '<input type="number" min="0" step="1000" id="tx_'+id+'" placeholder="อัตโนมัติ" value="'+(val==null?'':val)+'"></div>';
+  }
+
   /* ---------------- master render ---------------- */
   function render(){
     if (STATE.tab==='dashboard') renderDashboard();
     else if (STATE.tab==='add') renderAddView();
-    else if (STATE.tab==='list') renderListView();
-    else if (STATE.tab==='stats') renderStatsView();
-  }
-
-  /* ---------------- boot ---------------- */
-  document.getElementById('btnBudgetSettings').addEventListener('click', openBudgetModal);
-  document.getElementById('btnExport').addEventListener('click', exportCsv);
-  document.getElementById('btnCatSettings').addEventListener('click', openCategoryModal);
-
-  (async function boot(){
-    await Store.init();
-    await Store.initDownloads();
-    var session = getSession();
-    if (session && session.id) {
-      var profiles = await Store.getProfiles();
-      var match = profiles.find(function(p){ return p.id === session.id; });
-      if (match) {
-        await enterApp(match);
-        return;
-      }
-      clearSession();
-    }
-    showLoginScreen();
-  })();
-
-})();
-</script>
-</body>
-</html>
+    else if (STATE.tab==='li
